@@ -20,19 +20,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.android.unscramble.R
 import com.example.android.unscramble.databinding.GameFragmentBinding
 
 /**
- * Fragment where the game is played, contains the game logic.
+ * Логика игры, связь между View и ViewModel
+ * GameFragment как Контроллер
  */
-class GameFragment : Fragment() {
+class GameFragment : androidx.fragment.app.Fragment() {
 
-    private var score = 0
-    private var currentWordCount = 0
-    private var currentScrambledWord = "test"
-
+    //добавили ссылку(объект) на GameViewModel
+    //Делегирование свойств в Kotlin помогает передать ответственность за геттер-сеттер другому классу.
+    //Этот класс (называемый классом делегата ) предоставляет функции получения и установки свойства и обрабатывает его изменения.
+    //Свойство делегата определяется с помощью by и экземпляра класса делегата:
+    //var <property-name> : <property-type> by <delegate-class>()
+    private val viewModel: GameViewModel by viewModels()
 
     // Binding object instance with access to the views in the game_fragment.xml layout
     private lateinit var binding: GameFragmentBinding
@@ -64,33 +67,26 @@ class GameFragment : Fragment() {
     }
 
     /*
-    * Checks the user's word, and updates the score accordingly.
-    * Displays the next scrambled word.
+    * onSubmitWord()является прослушивателем кликов для кнопки « Отправить» ,
+    *  эта функция отображает следующее зашифрованное слово, очищает текстовое поле и
+    * увеличивает счет и количество слов без проверки слова игрока.
     */
     private fun onSubmitWord() {
-        currentScrambledWord = getNextScrambledWord()
-        currentWordCount++
-        score += SCORE_INCREASE
-        binding.wordCount.text = getString(R.string.word_count, currentWordCount, MAX_NO_OF_WORDS)
-        binding.score.text = getString(R.string.score, score)
-        setErrorTextField(false)
-        updateNextWordOnScreen()
+
     }
 
     /*
-     * Skips the current word without changing the score.
-     * Increases the word count.
+     * onSkipWord()является прослушивателем щелчков для кнопки « Пропустить» ,
+     * эта функция обновляет пользовательский интерфейс аналогично onSubmitWord(),
+     * за исключением оценки.
      */
     private fun onSkipWord() {
-        currentScrambledWord = getNextScrambledWord()
-        currentWordCount++
-        binding.wordCount.text = getString(R.string.word_count, currentWordCount, MAX_NO_OF_WORDS)
-        setErrorTextField(false)
-        updateNextWordOnScreen()
+
     }
 
     /*
-     * Gets a random word for the list of words and shuffles the letters in it.
+     * getNextScrambledWord() - это вспомогательная функция,
+     * которая выбирает случайное слово из списка слов и перемешивает буквы в нем
      */
     private fun getNextScrambledWord(): String {
         val tempWord = allWordsList.random().toCharArray()
@@ -99,8 +95,8 @@ class GameFragment : Fragment() {
     }
 
     /*
-     * Re-initializes the data in the ViewModel and updates the views with the new data, to
-     * restart the game.
+     * restartGame()и exitGame()функции используются для перезапуска и завершения игры соответственно,
+     *  вы будете использовать эти функции позже.
      */
     private fun restartGame() {
         setErrorTextField(false)
@@ -115,7 +111,7 @@ class GameFragment : Fragment() {
     }
 
     /*
-    * Sets and resets the text field error status.
+Устанавливает и сбрасывает статус ошибки текстового поля.
     */
     private fun setErrorTextField(error: Boolean) {
         if (error) {
@@ -128,9 +124,9 @@ class GameFragment : Fragment() {
     }
 
     /*
-     * Displays the next scrambled word on screen.
+     * updateNextWordOnScreen() функция отображает новое зашифрованное слово.
      */
     private fun updateNextWordOnScreen() {
-        binding.textViewUnscrambledWord.text = currentScrambledWord
+        binding.textViewUnscrambledWord.text = viewModel.currentScrambledWord
     }
 }
