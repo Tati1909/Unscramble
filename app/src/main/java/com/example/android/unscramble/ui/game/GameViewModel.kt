@@ -12,7 +12,9 @@ class GameViewModel : ViewModel()  {
     private var _score = 0
     val score: Int
         get() = _score
-    private var currentWordCount = 0
+    private var _currentWordCount = 0
+    val currentWordCount: Int
+        get() = _currentWordCount
     //_currentScrambledWord доступно и редактируется только в GameViewModel.
     // Контроллер пользовательского интерфейса GameFragment может только считывать значение
     // с помощью public свойства currentScrambledWord,
@@ -47,7 +49,7 @@ class GameViewModel : ViewModel()  {
             getNextWord()
         } else {
             _currentScrambledWord = String(tempWord)
-            ++currentWordCount
+            ++_currentWordCount
             wordsList.add(currentWord)
         }
     }
@@ -57,7 +59,7 @@ class GameViewModel : ViewModel()  {
 * Обновляет следующее слово.
 */
     fun nextWord(): Boolean {
-        return if (currentWordCount < MAX_NO_OF_WORDS) {
+        return if (_currentWordCount < MAX_NO_OF_WORDS) {
             getNextWord()
             true
         } else false
@@ -77,6 +79,16 @@ class GameViewModel : ViewModel()  {
             return true
         }
         return false
+    }
+
+    /*
+* Повторно инициализирует данные игры, чтобы перезапустить игру.
+* */
+    fun reinitializeData() {
+        _score = 0
+        _currentWordCount = 0
+        wordsList.clear()
+        getNextWord()
     }
 
     override fun onCleared() {
