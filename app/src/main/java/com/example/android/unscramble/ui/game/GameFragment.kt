@@ -100,7 +100,12 @@ class GameFragment : androidx.fragment.app.Fragment() {
      * за исключением оценки.
      */
     private fun onSkipWord() {
-
+        if (viewModel.nextWord()) {
+            setErrorTextField(false)
+            updateNextWordOnScreen()
+        } else {
+            showFinalScoreDialog()
+        }
     }
 
     /*
