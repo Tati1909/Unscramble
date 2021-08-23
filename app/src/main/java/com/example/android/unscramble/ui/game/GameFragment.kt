@@ -21,6 +21,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import com.example.android.unscramble.R
 import com.example.android.unscramble.databinding.GameFragmentBinding
@@ -50,8 +51,13 @@ class GameFragment : androidx.fragment.app.Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout XML file and return a binding object instance
-        binding = GameFragmentBinding.inflate(inflater, container, false)
+// Раздутие XML-файла макета и возврат экземпляра объекта привязки
+// Было binding = GameFragmentBinding.inflate(inflater, container, false)
+        // Подключили databinding в build.gradle
+        //buildFeatures {
+        //   dataBinding = true
+        //}
+        binding = DataBindingUtil.inflate(inflater, R.layout.game_fragment, container, false)
         Log.d("GameFragment", "GameFragment created/re-created!")
         Log.d(
             "GameFragment", "Word: ${viewModel.currentScrambledWord} " +
@@ -62,6 +68,13 @@ class GameFragment : androidx.fragment.app.Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // инициализируйте переменные макета gameViewModel и maxNoOfWords с помощью dataBinding
+        binding.gameViewModel = viewModel
+        binding.maxNoOfWords = MAX_NO_OF_WORDS
+
+        // Укажите вью фрагмента как владельца жизненного цикла привязки.
+        // Это используется для того, чтобы привязка dataBinding могла видеть обновления LiveData
+        binding.lifecycleOwner = viewLifecycleOwner
 
         // Setup a click listener for the Submit and Skip buttons.
         binding.submit.setOnClickListener { onSubmitWord() }
