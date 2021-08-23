@@ -24,6 +24,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.android.unscramble.R
 import com.example.android.unscramble.databinding.GameFragmentBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /**
  * Логика игры, связь между View и ViewModel
@@ -135,5 +136,22 @@ class GameFragment : androidx.fragment.app.Fragment() {
      */
     private fun updateNextWordOnScreen() {
         binding.textViewUnscrambledWord.text = viewModel.currentScrambledWord
+    }
+
+    /*
+* Создает и показывает AlertDialog с окончательной оценкой.*/
+    private fun showFinalScoreDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.congratulations))
+            .setMessage(getString(R.string.you_scored, viewModel.score))
+            .setCancelable(false) //Сделали диалоговое окно предупреждения не отменяемым
+    // при нажатии клавиши возврата, используя setCancelable()метод и передачу false.
+            .setNegativeButton(getString(R.string.exit)) { _, _ ->
+                exitGame()
+            }
+            .setPositiveButton(getString(R.string.play_again)) { _, _ ->
+                restartGame()
+            }
+            .show()
     }
 }
