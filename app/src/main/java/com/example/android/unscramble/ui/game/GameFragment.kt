@@ -24,6 +24,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.android.unscramble.R
 import com.example.android.unscramble.databinding.GameFragmentBinding
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /**
  * Логика игры, связь между View и ViewModel
@@ -74,12 +75,23 @@ class GameFragment : androidx.fragment.app.Fragment() {
     }
 
     /*
-    * onSubmitWord()является прослушивателем кликов для кнопки « Отправить» ,
-    *  эта функция отображает следующее зашифрованное слово, очищает текстовое поле и
-    * увеличивает счет и количество слов без проверки слова игрока.
+    * обработка кнопки submit(отправить)
+    * Если true доступно другое слово, обновите зашифрованное слово на экране с помощью updateNextWordOnScreen().
+    *  В противном случае игра окончена, поэтому отобразите диалоговое окно предупреждения с окончательным счетом.
     */
     private fun onSubmitWord() {
-
+        val playerWord = binding.textInputEditText.text.toString()
+        //проверяем слово игрока
+        if (viewModel.isUserWordCorrect(playerWord)) {
+            setErrorTextField(false)
+            if (viewModel.nextWord()) {
+                updateNextWordOnScreen()
+            } else {
+                showFinalScoreDialog()
+            }
+        } else {
+            setErrorTextField(true) //Если слово игрока неверно, показываем сообщение об ошибке в текстовом поле
+        }
     }
 
     /*
@@ -135,5 +147,22 @@ class GameFragment : androidx.fragment.app.Fragment() {
      */
     private fun updateNextWordOnScreen() {
         binding.textViewUnscrambledWord.text = viewModel.currentScrambledWord
+    }
+
+    /*
+* Создает и показывает AlertDialog с окончательной оценкой.*/
+    private fun showFinalScoreDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.congratulations))
+            .setMessage(getString(R.string.you_scored, viewModel.score))
+            .setCancelable(false) //Сделали диалоговое окно предупреждения не отменяемым
+    // при нажатии клавиши возврата, используя setCancelable()метод и передачу false.
+            .setNegativeButton(getString(R.string.exit)) { _, _ ->
+                exitGame()
+            }
+            .setPositiveButton(getString(R.string.play_again)) { _, _ ->
+                restartGame()
+            }
+            .show()
     }
 }

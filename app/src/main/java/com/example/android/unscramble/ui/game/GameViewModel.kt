@@ -7,8 +7,11 @@ class GameViewModel : ViewModel()  {
 //!!Изменяемые данные внутри ViewModel всегда должны быть private.
 
     //Переменные определены для текущего зашифрованного слова ( currentScrambledWord),
-    // количества слов ( currentWordCount) и оценки ( score).
-    private var score = 0
+    // количества слов ( currentWordCount) и
+    // оценки ( score).
+    private var _score = 0
+    val score: Int
+        get() = _score
     private var currentWordCount = 0
     //_currentScrambledWord доступно и редактируется только в GameViewModel.
     // Контроллер пользовательского интерфейса GameFragment может только считывать значение
@@ -58,6 +61,22 @@ class GameViewModel : ViewModel()  {
             getNextWord()
             true
         } else false
+    }
+
+    //новый частный метод, вызываемый increaseScore()без параметров и без возвращаемого значения.
+    // Увеличьте score переменную на SCORE_INCREASE.
+    private fun increaseScore() {
+        _score += SCORE_INCREASE
+    }
+
+    // Сверяем слово игрока  и увеличиваем счет , если догадка верна.
+    // Это обновит окончательный счет в нашем диалоговом окне предупреждения.
+    fun isUserWordCorrect(playerWord: String): Boolean {
+        if (playerWord.equals(currentWord, true)) {
+            increaseScore()
+            return true
+        }
+        return false
     }
 
     override fun onCleared() {
