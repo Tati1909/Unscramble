@@ -63,6 +63,22 @@ class GameViewModel : ViewModel()  {
         } else false
     }
 
+    //новый частный метод, вызываемый increaseScore()без параметров и без возвращаемого значения.
+    // Увеличьте score переменную на SCORE_INCREASE.
+    private fun increaseScore() {
+        _score += SCORE_INCREASE
+    }
+
+    // Сверяем слово игрока  и увеличиваем счет , если догадка верна.
+    // Это обновит окончательный счет в нашем диалоговом окне предупреждения.
+    fun isUserWordCorrect(playerWord: String): Boolean {
+        if (playerWord.equals(currentWord, true)) {
+            increaseScore()
+            return true
+        }
+        return false
+    }
+
     override fun onCleared() {
         super.onCleared()
         Log.d("GameFragment", "GameViewModel уничтожилась!")

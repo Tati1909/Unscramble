@@ -75,12 +75,23 @@ class GameFragment : androidx.fragment.app.Fragment() {
     }
 
     /*
-    * onSubmitWord()является прослушивателем кликов для кнопки « Отправить» ,
-    *  эта функция отображает следующее зашифрованное слово, очищает текстовое поле и
-    * увеличивает счет и количество слов без проверки слова игрока.
+    * обработка кнопки submit(отправить)
+    * Если true доступно другое слово, обновите зашифрованное слово на экране с помощью updateNextWordOnScreen().
+    *  В противном случае игра окончена, поэтому отобразите диалоговое окно предупреждения с окончательным счетом.
     */
     private fun onSubmitWord() {
-
+        val playerWord = binding.textInputEditText.text.toString()
+        //проверяем слово игрока
+        if (viewModel.isUserWordCorrect(playerWord)) {
+            setErrorTextField(false)
+            if (viewModel.nextWord()) {
+                updateNextWordOnScreen()
+            } else {
+                showFinalScoreDialog()
+            }
+        } else {
+            setErrorTextField(true) //Если слово игрока неверно, показываем сообщение об ошибке в текстовом поле
+        }
     }
 
     /*
