@@ -79,32 +79,6 @@ class GameFragment : androidx.fragment.app.Fragment() {
         // Setup a click listener for the Submit and Skip buttons.
         binding.submit.setOnClickListener { onSubmitWord() }
         binding.skip.setOnClickListener { onSkipWord() }
-
-        // Прикрепляем наблюдателя за scrambledCharArray LiveData, передавая LifecycleOwner и наблюдателя(лямбду).
-        //newWord будет содержать новое зашифрованное значение слова.
-        //Текстовое представление зашифрованного слова автоматически обновляется в LiveData наблюдателе newWord
-        viewModel.currentScrambledWord.observe(viewLifecycleOwner,
-            { newWord ->
-                binding.textViewUnscrambledWord.text = newWord
-            })
-        //то же самое делаем для счета
-        viewModel.score.observe(viewLifecycleOwner,
-            { newScore ->
-                binding.score.text = getString(R.string.score, newScore)
-            })
-
-        viewModel.currentWordCount.observe(viewLifecycleOwner,
-            { newWordCount ->
-                binding.wordCount.text =
-                    getString(R.string.word_count, newWordCount, MAX_NO_OF_WORDS)
-            })
-        //Новые наблюдатели будут запускаться при изменении значения счета и количества слов внутри ViewModel,
-    // в течение срока жизни владельца жизненного цикла, то есть в GameFragment.
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.d("GameFragment", "GameFragment destroyed!")
     }
 
     /*
@@ -137,16 +111,6 @@ class GameFragment : androidx.fragment.app.Fragment() {
         } else {
             showFinalScoreDialog()
         }
-    }
-
-    /*
-     * getNextScrambledWord() - это вспомогательная функция,
-     * которая выбирает случайное слово из списка слов и перемешивает буквы в нем
-     */
-    private fun getNextScrambledWord(): String {
-        val tempWord = allWordsList.random().toCharArray()
-        tempWord.shuffle()
-        return String(tempWord)
     }
 
     /*
