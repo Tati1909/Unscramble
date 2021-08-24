@@ -21,6 +21,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.viewModels
 import com.example.android.unscramble.R
 import com.example.android.unscramble.databinding.GameFragmentBinding
@@ -47,38 +48,42 @@ class GameFragment : androidx.fragment.app.Fragment() {
     // first fragment
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
-        // Inflate the layout XML file and return a binding object instance
-        binding = GameFragmentBinding.inflate(inflater, container, false)
+// Раздутие XML-файла макета и возврат экземпляра объекта привязки
+// Было binding = GameFragmentBinding.inflate(inflater, container, false)
+        // Подключили databinding в build.gradle
+        //buildFeatures {
+        //   dataBinding = true
+        //}
+        binding = DataBindingUtil.inflate(inflater, R.layout.game_fragment, container, false)
         Log.d("GameFragment", "GameFragment created/re-created!")
-        Log.d("GameFragment", "Word: ${viewModel.currentScrambledWord} " +
-                "Score: ${viewModel.score} WordCount: ${viewModel.currentWordCount}")
+        Log.d(
+            "GameFragment", "Word: ${viewModel.currentScrambledWord} " +
+                    "Score: ${viewModel.score} WordCount: ${viewModel.currentWordCount}"
+        )
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        // инициализируйте переменные макета gameViewModel и maxNoOfWords с помощью dataBinding
+        binding.gameViewModel = viewModel
+        binding.maxNoOfWords = MAX_NO_OF_WORDS
+
+        // Укажите вью фрагмента как владельца жизненного цикла привязки.
+        // Это используется для того, чтобы привязка dataBinding могла видеть обновления LiveData
+        binding.lifecycleOwner = viewLifecycleOwner
 
         // Setup a click listener for the Submit and Skip buttons.
         binding.submit.setOnClickListener { onSubmitWord() }
         binding.skip.setOnClickListener { onSkipWord() }
-        // Update the UI
-        updateNextWordOnScreen()
-        binding.score.text = getString(R.string.score, 0)
-        binding.wordCount.text = getString(
-                R.string.word_count, 0, MAX_NO_OF_WORDS)
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        Log.d("GameFragment", "GameFragment destroyed!")
     }
 
     /*
     * обработка кнопки submit(отправить)
-    * Если true доступно другое слово, обновите зашифрованное слово на экране с помощью updateNextWordOnScreen().
+    * Если true доступно другое слово, обновите зашифрованное слово на экране.
     *  В противном случае игра окончена, поэтому отобразите диалоговое окно предупреждения с окончательным счетом.
     */
     private fun onSubmitWord() {
@@ -86,9 +91,7 @@ class GameFragment : androidx.fragment.app.Fragment() {
         //проверяем слово игрока
         if (viewModel.isUserWordCorrect(playerWord)) {
             setErrorTextField(false)
-            if (viewModel.nextWord()) {
-                updateNextWordOnScreen()
-            } else {
+            if (!viewModel.nextWord()) {
                 showFinalScoreDialog()
             }
         } else {
@@ -104,20 +107,10 @@ class GameFragment : androidx.fragment.app.Fragment() {
     private fun onSkipWord() {
         if (viewModel.nextWord()) {
             setErrorTextField(false)
-            updateNextWordOnScreen()
+            //updateNextWordOnScreen()
         } else {
             showFinalScoreDialog()
         }
-    }
-
-    /*
-     * getNextScrambledWord() - это вспомогательная функция,
-     * которая выбирает случайное слово из списка слов и перемешивает буквы в нем
-     */
-    private fun getNextScrambledWord(): String {
-        val tempWord = allWordsList.random().toCharArray()
-        tempWord.shuffle()
-        return String(tempWord)
     }
 
     /*
@@ -126,7 +119,7 @@ class GameFragment : androidx.fragment.app.Fragment() {
     private fun restartGame() {
         viewModel.reinitializeData()
         setErrorTextField(false)
-        updateNextWordOnScreen()
+        //updateNextWordOnScreen()
     }
 
     /*
@@ -150,20 +143,13 @@ class GameFragment : androidx.fragment.app.Fragment() {
     }
 
     /*
-     * updateNextWordOnScreen() функция отображает новое зашифрованное слово.
-     */
-    private fun updateNextWordOnScreen() {
-        binding.textViewUnscrambledWord.text = viewModel.currentScrambledWord
-    }
-
-    /*
 * Создает и показывает AlertDialog с окончательной оценкой.*/
     private fun showFinalScoreDialog() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.congratulations))
-            .setMessage(getString(R.string.you_scored, viewModel.score))
+            .setMessage(getString(R.string.you_scored, viewModel.score.value))
             .setCancelable(false) //Сделали диалоговое окно предупреждения не отменяемым
-    // при нажатии клавиши возврата, используя setCancelable()метод и передачу false.
+            // при нажатии клавиши возврата, используя setCancelable()метод и передачу false.
             .setNegativeButton(getString(R.string.exit)) { _, _ ->
                 exitGame()
             }

@@ -1,26 +1,29 @@
 package com.example.android.unscramble.ui.game
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
-class GameViewModel : ViewModel()  {
+class GameViewModel : ViewModel() {
 //!!Изменяемые данные внутри ViewModel всегда должны быть private.
 
     //Переменные определены для текущего зашифрованного слова ( currentScrambledWord),
     // количества слов ( currentWordCount) и
     // оценки ( score).
-    private var _score = 0
-    val score: Int
+    private val _score = MutableLiveData(0)
+    val score: LiveData<Int>
         get() = _score
-    private var _currentWordCount = 0
-    val currentWordCount: Int
+    private val _currentWordCount = MutableLiveData(0)
+    val currentWordCount: LiveData<Int>
         get() = _currentWordCount
+
     //_currentScrambledWord доступно и редактируется только в GameViewModel.
     // Контроллер пользовательского интерфейса GameFragment может только считывать значение
     // с помощью public свойства currentScrambledWord,
     // доступного только для чтения
-    private lateinit var _currentScrambledWord: String
-    val currentScrambledWord: String
+    private val _currentScrambledWord = MutableLiveData<String>()
+    val currentScrambledWord: LiveData<String>
         get() = _currentScrambledWord
     private var wordsList: MutableList<String> = mutableListOf()
     private lateinit var currentWord: String
@@ -48,8 +51,10 @@ class GameViewModel : ViewModel()  {
         if (wordsList.contains(currentWord)) {
             getNextWord()
         } else {
-            _currentScrambledWord = String(tempWord)
-            ++_currentWordCount
+            //Чтобы получить доступ к данным внутри LiveData объекта, используйте value свойство.
+            _currentScrambledWord.value = String(tempWord)
+                //++_currentWordCount.value - так опасно делать, используем юезопасную инкрементацию
+            _currentWordCount.value = (_currentWordCount.value)?.inc()
             wordsList.add(currentWord)
         }
     }
@@ -59,16 +64,18 @@ class GameViewModel : ViewModel()  {
 * Обновляет следующее слово.
 */
     fun nextWord(): Boolean {
-        return if (_currentWordCount < MAX_NO_OF_WORDS) {
+        return if (_currentWordCount.value!! < MAX_NO_OF_WORDS) {
             getNextWord()
             true
         } else false
     }
 
-    //новый частный метод, вызываемый increaseScore()без параметров и без возвращаемого значения.
+    // метод, вызываемый без параметров и без возвращаемого значения.
     // Увеличьте score переменную на SCORE_INCREASE.
+    //Используйте plus()функцию Kotlin, которая выполняет добавление с нулевой безопасностью.
+    //было так: _score.value += SCORE_INCREASE
     private fun increaseScore() {
-        _score += SCORE_INCREASE
+        _score.value = (_score.value)?.plus(SCORE_INCREASE)
     }
 
     // Сверяем слово игрока  и увеличиваем счет , если догадка верна.
@@ -85,8 +92,8 @@ class GameViewModel : ViewModel()  {
 * Повторно инициализирует данные игры, чтобы перезапустить игру.
 * */
     fun reinitializeData() {
-        _score = 0
-        _currentWordCount = 0
+        _score.value = 0
+        _currentWordCount.value = 0
         wordsList.clear()
         getNextWord()
     }
